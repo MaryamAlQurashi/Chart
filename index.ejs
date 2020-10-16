@@ -11,38 +11,26 @@
   </style>
 </head>
 <body>
-  <a href="/generate">Generate 100 users</a>
   <canvas id="myChart"></canvas>
   <!-- Start Js -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.1/Chart.min.js"></script>
   <script>
     let ctx = document.querySelector('#myChart').getContext('2d');
-
+    
     let myChart = new Chart(ctx, {
       type: 'bar',
       data: {
-        labels: ["Slack", "Zu" , "Teamwork" , "Google",  "Facebook" , "Twitter", "GitHub" , "LinkedIn"],
+        labels: ["GitHub", "SAP"],
         datasets: [{
           label: '#',
-          data: [<%= '192.168.0.179' %>, <%= '172.16.31.95' %>, <%= '93.184.220.29' %> , <%= '94.206.5.32' %> , <%= '4.2.2.2' %> , <%= '52.208.238.241' %>, <%= '140.82.114.26' %>, <%= '23.39.199.181' %>],
+          data: [<%= gh %>, <%= sp %>],
           backgroundColor: [
             'rgba(255, 99, 132, 0.2)',
-            'rgba(54, 162, 235, 0.2)',
-            'rgba(54, 162, 235, 0.2)',
-            'rgba(54, 162, 235, 0.2)',
-            'rgba(54, 162, 235, 0.2)',
-            'rgba(54, 162, 235, 0.2)',
-            'rgba(54, 162, 235, 0.2)',
             'rgba(54, 162, 235, 0.2)'
+            
              ],
           borderColor: [
-            'rgba(255,99,132,1)',
-            'rgba(54, 162, 235, 1)',
-            'rgba(54, 162, 235, 1)',
-            'rgba(54, 162, 235, 1)',
-            'rgba(54, 162, 235, 1)',
-            'rgba(54, 162, 235, 1)',
-            'rgba(54, 162, 235, 1)',
+            'rgba(255,99,132, 1)',
             'rgba(54, 162, 235, 1)'
         ],
           borderWidth: 1
@@ -58,7 +46,7 @@
          },
          title: {
             display: true,
-            text: 'MOTF Sninffer Monitor',
+            text: 'MOTF Sniffer Monitor',
             fontSize: 18
         }
      }
