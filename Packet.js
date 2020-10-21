@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 
 const packetSchema = new mongoose.Schema({
-  TIME: String,
+  TIME: Number,
   IP_SRC: String,
   PROTOCOL: Number
 });
