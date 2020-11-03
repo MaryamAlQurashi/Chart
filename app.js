@@ -11,6 +11,109 @@ app.set('view engine', 'ejs');
 
 
 // routes
+
+// attempts
+
+    
+
+    Packet.find({}, function(err, data)
+            {
+                    if(err){
+                            console.log(err, data, data.length);
+                    }else{
+                            console.log(data);
+                    }
+
+                    var Time = [];
+                    var Protocol = [];
+                    var Grafico = [];
+
+
+                    for (index in data){
+
+                    var doc = data[index];
+                    var objectId = new ObjectID(doc['_id'])
+                    var time = objectId.getTimestamp();
+                    console.log(doc['PROTOCOL']);
+                    var protocol = doc['PROTOCOL'];
+
+                    Protocol.push({"value" : protocol});
+                    Time.push({"value" : time});
+
+                    }
+    }).sort('-date').limit(100);
+
+app.get("/packet", function(req, res){
+        res.render('grafico.ejs',{val: Protocol},{message: req.flash('loginMessage') });
+});
+
+
+//////////////
+
+
+
+
+
+app.get('/cc', (req, res) => {
+        
+
+        const ti =  Packet.find({}, {
+                TIME: 1000
+              });
+              console.log(ti);
+
+        const prot =  Packet.find({}, {
+                PROTOCOL: 1000
+                });
+                console.log(prot);
+
+        const coun =  Packet.find({}, {
+                TIME: 1000,
+                PROTOCOL: 1000
+                });
+                console.log(coun);
+
+
+                res.render('plot', {pktti: ti.prot,  cn: coun.length 
+                });
+        
+      });
+
+
+
+
+//////////////
+
+
+app.get('/ccc', (req, res) => {
+        let  pkttcp, pktudp;
+        Packet.find({})
+          .then(packets => {
+            
+      
+            
+            pkttcp = packets.filter(packet => packet.TIME > 0 && packet.PROTOCOL == 17);
+            pktudp = packets.filter(packet => packet.TIME > 0 && packet.PROTOCOL == 6);
+            
+            
+      
+            
+            res.render('plot', {tcpc: pkttcp.length, udpc: pktudp.length
+            
+            
+            });
+          })
+          .catch(err => console.error(err));
+      });
+
+
+
+
+
+//////////////
+
+
+
 app.get('/', (req, res) => {
   let Eight, Nine, Ten, Eleven, Twelve, Thirteen, Fourteen, Fifteen;
   Packet.find({})
