@@ -1,70 +1,106 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta http-equiv="X-UA-Compatible" content="ie=edge">
-  <title>Chart.Js with MongoDB & Node.Js</title>
-  <style>
-    body {font-family: Lato;}
-    a { text-decoration: none; color: #777;}
-  </style>
-</head>
-<body>
-  <canvas id="myChart"></canvas>
-  <!-- Start Js -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.1/Chart.min.js"></script>
-  <script>
-    let ctx = document.querySelector('#myChart').getContext('2d');
+<!DOCTYPE hmtl>
 
-    let myChart = new Chart(ctx, {
-      type: 'line',
-      data: {
-        labels: ["8AM", "9AM", "10AM" , "11AM", "12PM" , "1PM", "2PM", "3PM"],
-        datasets: [{
-          label: '#',
-          data: [<%= ei %>, <%= ni %>, <%= te %>, <%= el %> , <%= tw %> ,<%= thr %> , <%= fr %> , <%= ff%>],
-          backgroundColor: [
-            'rgba(255, 99, 132, 0.2)',
-            'rgba(54, 162, 235, 0.2)',
-            'rgba(255, 206, 86, 0.2)',
-            'rgba(75, 192, 192, 0.2)',
-            'rgba(153, 102, 255, 0.2)',
-            'rgba(255, 159, 64, 0.2)',
-            'rgba(255, 159, 64, 0.2)',
-            'rgba(255, 159, 64, 0.2)'
+<html>
 
-            
-             ],
-          borderColor: [
-            'rgba(255, 99, 132, 1)',
-            'rgba(54, 162, 235, 1)',
-            'rgba(255, 206, 86, 1)',
-            'rgba(75, 192, 192, 1)',
-            'rgba(153, 102, 255, 1)',
-            'rgba(255, 159, 64, 1)',
-            'rgba(255, 159, 64, 1)',
-            'rgba(255, 159, 64, 1)'
-        ],
-          borderWidth: 1
-        }]
-     },
-     options: {
-         scales: {
-             yAxes: [{
-                 ticks: {
-                     beginAtZero:true
-                 }
-             }]
-         },
-         title: {
-            display: true,
-            text: 'MOTF Sniffer Monitor',
-            fontSize: 18
-        }
-     }
-    }); // end chart obj
+  <head>
 
-  </script>
-</body>
+    <!-- ZingChart CDN script -->
+    <script src="https://cdn.zingchart.com/zingchart.min.js"></script>
+
+    <style>
+      #chart {
+        height: 300px;
+        width: 300px;
+      }
+    </style>
+
+  </head>
+
+  <body>
+
+    <h1>packets</h1>
+
+    <!-- EJS loop through packets returned from MongoDB -->
+    <ul>
+
+      <!-- inserts each packet time/protocol from MongoDB to list -->
+      <% packets.forEach(packet => { %>
+      <li><%= `Time: ${packet.Time.getTime()}, Protocol: ${packet.Protocol}` %></li>
+      <% }); %>
+
+    </ul>
+
+    <!-- chart container -->
+    <div id="chart"></div>
+
+    <!-- fetches data from api/data page & renders chart from data returned -->
+    <script>
+
+      // creates variable for url we want to fetch
+      const url = 'http://localhost/3000/api/data';
+
+      // fetch call to our /api/data page
+      fetch(url)
+
+        // creates promise to work with response from /api/data
+        .then(res => {
+
+          // throws error if there is a problem fetching page
+          if (!res.ok) {
+
+            // returns error with response text of error
+            throw new Error(res.statusText);
+
+          }
+
+          // returns data from /api/data page in json format to next promise
+          return res.json();
+
+        })
+
+        // creates promise with returned data from previous promise
+        .then(data => {
+
+          // creates packets variable to store JSON data form /api/data
+          let packets = data;
+
+          // creates empty packetInfo array
+          let packetInfo = [];
+
+          // loops through data from packet variable
+          packets.forEach(packet => {
+
+            // pushes values from packets variable to empty packetInfo array
+            packetInfo.push([Date.parse(packet.Time.getTime()), parseInt(packet.Protocol)]);
+            console.log("found info  :" + [PacketInfo]);
+
+          });
+
+          // creates chart const with packetInfo array
+          const chart = {
+            type: 'bar',
+            series: [
+              {
+                values: packetInfo
+              }
+            ]
+          };
+
+          // renders zingchart to the page
+          zingchart.render({
+            id: 'chart',
+            data: chart,
+            height: '100%',
+            width: '100%'
+          });
+
+        })
+
+        // catches errors in promise chain
+        .catch(error => console.log('fetch error'));
+
+    </script>
+
+  </body>
+
 </html>
