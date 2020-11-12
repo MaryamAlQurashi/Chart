@@ -9,8 +9,8 @@
 
     <style>
       #chart {
-        height: 300px;
-        width: 300px;
+        height: 1150px;
+        width: 1750px;
       }
     </style>
 
@@ -18,14 +18,14 @@
 
   <body>
 
-    <h1>packets</h1>
+    <h1>Packets</h1>
 
-    <!-- EJS loop through packets returned from MongoDB -->
+    <!-- EJS loop through employees returned from MongoDB -->
     <ul>
 
-      <!-- inserts each packet time/protocol from MongoDB to list -->
-      <% packets.forEach(packet => { %>
-      <li><%= `Time: ${packet.Time.getTime()}, Protocol: ${packet.Protocol}` %></li>
+      <!-- inserts each employee name/age from MongoDB to list -->
+      <% pkts.forEach(pkt => { %>
+      <li><%= `Time: ${pkt.TIME.getTime()}, Protocol: ${pkt.PROTOCOL}` %></li>
       <% }); %>
 
     </ul>
@@ -37,7 +37,7 @@
     <script>
 
       // creates variable for url we want to fetch
-      const url = 'http://localhost/3000/api/data';
+      const url = 'http://localhost:3000/api/data';
 
       // fetch call to our /api/data page
       fetch(url)
@@ -61,27 +61,52 @@
         // creates promise with returned data from previous promise
         .then(data => {
 
-          // creates packets variable to store JSON data form /api/data
-          let packets = data;
+          // creates pkts variable to store JSON data form /api/data
+          let pkts = data;
+          
+          //let pktCnT = [];
+          //let pktCnU = [];
 
-          // creates empty packetInfo array
-          let packetInfo = [];
+          //let tcp = data.filter(pr => pr.PROTOCOL == 17);
+          //let udp = data.filter(pr => pr.PROTOCOL == 6 );
 
-          // loops through data from packet variable
-          packets.forEach(packet => {
+          // creates empty employeeInfo array
+          let pktInfo = [];
+          //let pktCnT = [];
+          //let pktCnU = [];
+          //let tcp, udp;
+          let pktInfo2 =[];
 
-            // pushes values from packets variable to empty packetInfo array
-            packetInfo.push([Date.parse(packet.Time.getTime()), parseInt(packet.Protocol)]);
-            console.log("found info  :" + [PacketInfo]);
+          // loops through data from employee variable
+          pkts.forEach(pkt => {
+
+           //tcp = pkt.filter(pr => pr.Protocol == 17);
+            //udp = pkt.filter(pr => pr.Protocol == 6 );
+
+            // pushes values from employees variable to empty employeeInfo array
+            pktInfo.push([Date.parse(pkt.TIME) , parseInt(pkt.PROTOCOL)]);
+            pktInfo2.push([Date.parse(pkt.TIME) , parseInt(pkt.PROTOCOL) , parseInt(pktInfo.length)]);
+            //pktInfo2.push([Date.parse(pkt.TIME) ,  parseInt(pktInfo.length)]);
+            //pktInfo2.push([pktInfo, parseInt(pkt.Protocol.length)]);
+            //pktCnT.push ([parseInt(pkt.Protocol: 6)]);
+            //pktCnU.push ([parseInt(pkt.Protocol: 17)]);
 
           });
 
-          // creates chart const with packetInfo array
+          // creates chart const with employeeInfo array
           const chart = {
-            type: 'bar',
+            type: 'bubble',
+            scaleX: {
+              'min-value': 1602496397577,
+              step: 'hour',
+        transform: {
+          type: 'date',
+          all: '%m/%d/%y<br>%h:%i %A'
+        }
+      },
             series: [
               {
-                values: packetInfo
+                values: pktInfo2
               }
             ]
           };
