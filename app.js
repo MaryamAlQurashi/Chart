@@ -44,37 +44,28 @@ app.get('/', (req, res) => {
     // creates const for our database
     const db = client.db(dbName);
 
-    // creates const for 'packets' collection in database
-    const col = db.collection('httpresponse');
+    // creates const for 'pkts' collection in database
+    const col = db.collection('packets');
 
-    let pkttime, pktp, pktp2, dtime;
-    // finds ALL packets in 'packets' collection/converts to array
-    col.find({}).toArray().then(docs => {
+    // finds ALL pkts in 'pkts' collection/converts to array
+    col.find({}).skip(10).limit(500).toArray().then(docs => {
 
       // logs message upon finding collection
-      console.log('found packets for index');
-      console.log(docs);
+      console.log('found pkts for index');
 
-      dtime = parseInt(docs.Time.getHours());
-      pkttime = [dtime in range (0,24)];
-      pktp = docs.filter(doc => doc.Protocol == 6);
-      pktp2 = docs.filter(doc => doc.Protocol == 17);
-
-      
-
-      // renders index ejs template and passes packets array as data
+      // renders index ejs template and passes pkts array as data
       res.render('index', {
-        packets: docs, time: pkttime, tcp: pktp, udp: pktp2, tcpc: pktp.length, udpc: pktp2.length
+        pkts: docs
       });
 
       // closes connection to mongodb and logs message
       client.close(() => console.log('connection closed'));
 
-    // checks for error in finding 'packets' collection
+    // checks for error in finding 'pkts' collection
     }).catch(err => {
 
-      // logs message upon error in finding 'packets' collection
-      console.log('error finding packets', err);
+      // logs message upon error in finding 'pkts' collection
+      console.log('error finding pkts', err);
 
     });
 
@@ -99,26 +90,26 @@ app.get('/api/data', (req, res) => {
     // creates const for our database
     const db = client.db(dbName);
 
-    // creates const for 'packets' collection in database
-    const col = db.collection('httpresponse');
+    // creates const for 'pkts' collection in database
+    const col = db.collection('packets');
 
-    // finds ALL packets in 'packets' collection/converts to array
-    col.find({}).toArray().then(docs => {
+    // finds ALL pkts in 'pkts' collection/converts to array
+    col.find({}).skip(10).limit(10000).toArray().then(docs => {
 
-      // logs message upon finding 'packets' collection
-      console.log('found packets for api');
+      // logs message upon finding 'pkts' collection
+      console.log('found pkts for api');
 
-      // sends/renders packets array to /api/data page
+      // sends/renders pkts array to /api/data page
       res.send(docs);
 
       // closes connection to mongodb and logs message
       client.close(() => console.log('connection closed'));
 
-    // checks for error finding 'packets' collection
+    // checks for error finding 'pkts' collection
     }).catch(err => {
 
-      // logs message upon error finding 'packets' collection
-      console.log('unable to find packets for api', err);
+      // logs message upon error finding 'pkts' collection
+      console.log('unable to find pkts for api', err);
 
     });
 
