@@ -63,7 +63,7 @@ app.get('/', (req, res) => {
       
 
       // renders index ejs template and passes packets array as data
-      res.render('count', {
+      res.render('index', {
         packets: docs, time: pkttime, tcp: pktp, udp: pktp2, tcpc: pktp.length, udpc: pktp2.length
       });
 
