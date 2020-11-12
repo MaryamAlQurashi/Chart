@@ -1,248 +1,136 @@
+// logs message upon starting app
+console.log('app started');
+
+// imports express module & initializes express app
 const express = require('express');
 const app = express();
-const server = require('http').createServer(app);
-const port = process.env.PORT || 8080;
 
-// user model
-const Packet = require('./models/Packet');
-require('./libs/db-connection');
-// view engine
+// imports built-in node path module
+const path = require('path');
+
+// imports body parser module
+const bodyParser = require('body-parser');
+
+// sets port varaible
+const port = process.env.PORT || 3000;
+
+// imports mongodb node driver & creates const for hosted mongo url
+const MongoClient = require('mongodb').MongoClient;
+
+// hosted mongodb instance url
+const url = 'mongodb://localhost:27017/database';
+
+// sets view folder
+app.set('views', path.join(__dirname, 'views'));
+
+// sets view engine
 app.set('view engine', 'ejs');
 
+// bodyParser middleware (returns POST requests as JSON)
+app.use(bodyParser.urlencoded({
+  extended: false
+}));
+app.use(bodyParser.json());
 
-// routes
+// creates const for name of our database
+const dbName = 'database';
 
-// attempts
-
-    
-
-    Packet.find({}, function(err, data)
-            {
-                    if(err){
-                            console.log(err, data, data.length);
-                    }else{
-                            console.log(data);
-                    }
-
-                    var Time = [];
-                    var Protocol = [];
-                    var Grafico = [];
-
-
-                    for (index in data){
-
-                    var doc = data[index];
-                    var objectId = new ObjectID(doc['_id'])
-                    var time = objectId.getTimestamp();
-                    console.log(doc['PROTOCOL']);
-                    var protocol = doc['PROTOCOL'];
-
-                    Protocol.push({"value" : protocol});
-                    Time.push({"value" : time});
-
-                    }
-    }).sort('-date').limit(100);
-
-app.get("/packet", function(req, res){
-        res.render('grafico.ejs',{val: Protocol},{message: req.flash('loginMessage') });
-});
-
-
-//////////////
-
-
-
-
-
-app.get('/cc', (req, res) => {
-        
-
-        const ti =  Packet.find({}, {
-                TIME: 1000
-              });
-              console.log(ti);
-
-        const prot =  Packet.find({}, {
-                PROTOCOL: 1000
-                });
-                console.log(prot);
-
-        const coun =  Packet.find({}, {
-                TIME: 1000,
-                PROTOCOL: 1000
-                });
-                console.log(coun);
-
-
-                res.render('plot', {pktti: ti.prot,  cn: coun.length 
-                });
-        
-      });
-
-
-
-
-//////////////
-
-
-app.get('/ccc', (req, res) => {
-        let  pkttcp, pktudp;
-        Packet.find({})
-          .then(packets => {
-            
-      
-            
-            pkttcp = packets.filter(packet => packet.TIME > 0 && packet.PROTOCOL == 17);
-            pktudp = packets.filter(packet => packet.TIME > 0 && packet.PROTOCOL == 6);
-            
-            
-      
-            
-            res.render('plot', {tcpc: pkttcp.length, udpc: pktudp.length
-            
-            
-            });
-          })
-          .catch(err => console.error(err));
-      });
-
-
-
-
-
-//////////////
-
-
-
+// creates GET request route for index
 app.get('/', (req, res) => {
-  let Eight, Nine, Ten, Eleven, Twelve, Thirteen, Fourteen, Fifteen;
-  Packet.find({})
-    .then(packets => {
-      
-      Eight = packets.filter(packet => packet.TIME > 8.00 && packet.TIME < 9.00);
-      Nine = packets.filter(packet => packet.TIME > 9.00  && packet.TIME < 10.00); 
-      Ten = packets.filter(packet => packet.TIME > 10.00 && packet.TIME < 11.00); 
-      Eleven = packets.filter(packet => packet.TIME > 11.00 && packet.TIME < 12.00);
-      Twelve = packets.filter(packet => packet.TIME > 12.00 && packet.TIME < 13.00);
-      Thirteen = packets.filter(packet => packet.TIME > 13.00 && packet.TIME < 14.00);
-      Fourteen = packets.filter(packet => packet.TIME > 14.00 && packet.TIME < 15.00 );
-      Fifteen = packets.filter(packet => packet.TIME > 15.00 && packet.TIME < 16.00);
-      
+
+  // opens connection to mongodb
+  MongoClient.connect(url).then(client => {
+
+    // creates const for our database
+    const db = client.db(dbName);
+
+    // creates const for 'packets' collection in database
+    const col = db.collection('httpresponse');
+
+    let pkttime, pktp, pktp2, dtime;
+    // finds ALL packets in 'packets' collection/converts to array
+    col.find({}).toArray().then(docs => {
+
+      // logs message upon finding collection
+      console.log('found packets for index');
+      console.log(docs);
+
+      dtime = parseInt(docs.Time.getHours());
+      pkttime = [dtime in range (0,24)];
+      pktp = docs.filter(doc => doc.Protocol == 6);
+      pktp2 = docs.filter(doc => doc.Protocol == 17);
 
       
-      res.render('index', {ei: Eight.length, ni: Nine.length, te: Ten.length, el: Eleven.length , tw: Twelve.length , thr: Thirteen.length , fr: Fourteen.length , ff:Fifteen.length});
-    })
-    .catch(err => console.error(err));
+
+      // renders index ejs template and passes packets array as data
+      res.render('count', {
+        packets: docs, time: pkttime, tcp: pktp, udp: pktp2, tcpc: pktp.length, udpc: pktp2.length
+      });
+
+      // closes connection to mongodb and logs message
+      client.close(() => console.log('connection closed'));
+
+    // checks for error in finding 'packets' collection
+    }).catch(err => {
+
+      // logs message upon error in finding 'packets' collection
+      console.log('error finding packets', err);
+
+    });
+
+  // checks for error in connecting to mongodb
+  }).catch(err => {
+
+    // logs message upon error connecting to mongodb
+    console.log('error connecting to mongodb', err);
+
+  });
+
 });
 
 
-app.get('/Github', (req, res) => {
-  let Eight, Nine, Ten, Eleven, Twelve, Thirteen, Fourteen, Fifteen;
-  Packet.find({})
-    .then(packets => {
-      
-      Eight = packets.filter(packet => packet.TIME > 8.00 && packet.TIME < 9.00 && packet.IP_SRC == '140.82.114.26');
-      Nine = packets.filter(packet => packet.TIME > 9.00  && packet.TIME < 10.00 && packet.IP_SRC == '140.82.114.26'); 
-      Ten = packets.filter(packet => packet.TIME > 10.00 && packet.TIME < 11.00 && packet.IP_SRC == '140.82.114.26'); 
-      Eleven = packets.filter(packet => packet.TIME > 11.00 && packet.TIME < 12.00 && packet.IP_SRC == '140.82.114.26');
-      Twelve = packets.filter(packet => packet.TIME > 12.00 && packet.TIME < 13.00 && packet.IP_SRC == '140.82.114.26');
-      Thirteen = packets.filter(packet => packet.TIME > 13.00 && packet.TIME < 14.00 && packet.IP_SRC == '140.82.114.26');
-      Fourteen = packets.filter(packet => packet.TIME > 14.00 && packet.TIME < 15.00 && packet.IP_SRC == '140.82.114.26' );
-      Fifteen = packets.filter(packet => packet.TIME > 15.00 && packet.TIME < 16.00 && packet.IP_SRC == '140.82.114.26');
-      
 
-      
-      res.render('index', {ei: Eight.length, ni: Nine.length, te: Ten.length, el: Eleven.length , tw: Twelve.length , thr: Thirteen.length , fr: Fourteen.length , ff:Fifteen.length});
-    })
-    .catch(err => console.error(err));
+// creates GET request route for /api/data page
+app.get('/api/data', (req, res) => {
+
+  // opens connection to mongodb
+  MongoClient.connect(url).then(client => {
+
+    // creates const for our database
+    const db = client.db(dbName);
+
+    // creates const for 'packets' collection in database
+    const col = db.collection('httpresponse');
+
+    // finds ALL packets in 'packets' collection/converts to array
+    col.find({}).toArray().then(docs => {
+
+      // logs message upon finding 'packets' collection
+      console.log('found packets for api');
+
+      // sends/renders packets array to /api/data page
+      res.send(docs);
+
+      // closes connection to mongodb and logs message
+      client.close(() => console.log('connection closed'));
+
+    // checks for error finding 'packets' collection
+    }).catch(err => {
+
+      // logs message upon error finding 'packets' collection
+      console.log('unable to find packets for api', err);
+
+    });
+
+  // checks for error in connecting to mongodb
+  }).catch(err => {
+
+    // logs message upon error connecting to mongodb
+    console.log('error connecting to mongodb', err);
+
+  });
+
 });
 
-
-app.get('/SAP', (req, res) => {
-  let Eight, Nine, Ten, Eleven, Twelve, Thirteen, Fourteen, Fifteen;
-  Packet.find({})
-    .then(packets => {
-      
-      Eight = packets.filter(packet => packet.TIME > 8.00 && packet.TIME < 9.00 && packet.IP_SRC ==  '195.229.145.123');
-      Nine = packets.filter(packet => packet.TIME > 9.00  && packet.TIME < 10.00 && packet.IP_SRC ==  '195.229.145.123'); 
-      Ten = packets.filter(packet => packet.TIME > 10.00 && packet.TIME < 11.00 && packet.IP_SRC ==  '195.229.145.123'); 
-      Eleven = packets.filter(packet => packet.TIME > 11.00 && packet.TIME < 12.00 && packet.IP_SRC ==  '195.229.145.123');
-      Twelve = packets.filter(packet => packet.TIME > 12.00 && packet.TIME < 13.00 && packet.IP_SRC ==  '195.229.145.123');
-      Thirteen = packets.filter(packet => packet.TIME > 13.00 && packet.TIME < 14.00 && packet.IP_SRC ==  '195.229.145.123');
-      Fourteen = packets.filter(packet => packet.TIME > 14.00 && packet.TIME < 15.00 && packet.IP_SRC ==  '195.229.145.123');
-      Fifteen = packets.filter(packet => packet.TIME > 15.00 && packet.TIME < 16.00 && packet.IP_SRC ==  '195.229.145.123');
-      
-
-      
-      res.render('index', {ei: Eight.length, ni: Nine.length, te: Ten.length, el: Eleven.length , tw: Twelve.length , thr: Thirteen.length , fr: Fourteen.length , ff:Fifteen.length});
-    })
-    .catch(err => console.error(err));
-});
-
-app.get('/aws', (req, res) => {
-  let Eight, Nine, Ten, Eleven, Twelve, Thirteen, Fourteen, Fifteen;
-  Packet.find({})
-    .then(packets => {
-      
-      Eight = packets.filter(packet => packet.TIME > 8.00 && packet.TIME < 9.00 && packet.IP_SRC == '52.21.91.94');
-      Nine = packets.filter(packet => packet.TIME > 9.00  && packet.TIME < 10.00 && packet.IP_SRC == '52.21.91.94'); 
-      Ten = packets.filter(packet => packet.TIME > 10.00 && packet.TIME < 11.00 && packet.IP_SRC == '52.21.91.94'); 
-      Eleven = packets.filter(packet => packet.TIME > 11.00 && packet.TIME < 12.00 && packet.IP_SRC == '52.21.91.94');
-      Twelve = packets.filter(packet => packet.TIME > 12.00 && packet.TIME < 13.00 && packet.IP_SRC == '52.21.91.94');
-      Thirteen = packets.filter(packet => packet.TIME > 13.00 && packet.TIME < 14.00 && packet.IP_SRC == '52.21.91.94');
-      Fourteen = packets.filter(packet => packet.TIME > 14.00 && packet.TIME < 15.00  && packet.IP_SRC == '52.21.91.94');
-      Fifteen = packets.filter(packet => packet.TIME > 15.00 && packet.TIME < 16.00 && packet.IP_SRC == '52.21.91.94');
-      
-
-      
-      res.render('index', {ei: Eight.length, ni: Nine.length, te: Ten.length, el: Eleven.length , tw: Twelve.length , thr: Thirteen.length , fr: Fourteen.length , ff:Fifteen.length});
-    })
-    .catch(err => console.error(err));
-});
-
-
-app.get('/goog', (req, res) => {
-  let Eight, Nine, Ten, Eleven, Twelve, Thirteen, Fourteen, Fifteen;
-  Packet.find({})
-    .then(packets => {
-      
-      
-      Eight = packets.filter(packet => packet.TIME > 8.00 && packet.TIME < 9.00 && packet.IP_SRC == '64.233.177.106');
-      Nine = packets.filter(packet => packet.TIME > 9.00  && packet.TIME < 10.00 && packet.IP_SRC == '64.233.177.106'); 
-      Ten = packets.filter(packet => packet.TIME > 10.00 && packet.TIME < 11.00 && packet.IP_SRC == '64.233.177.106'); 
-      Eleven = packets.filter(packet => packet.TIME > 11.00 && packet.TIME < 12.00 && packet.IP_SRC == '64.233.177.106');
-      Twelve = packets.filter(packet => packet.TIME > 12.00 && packet.TIME < 13.00 && packet.IP_SRC == '64.233.177.106');
-      Thirteen = packets.filter(packet => packet.TIME > 13.00 && packet.TIME < 14.00 && packet.IP_SRC == '64.233.177.106');
-      Fourteen = packets.filter(packet => packet.TIME > 14.00 && packet.TIME < 15.00  && packet.IP_SRC == '64.233.177.106');
-      Fifteen = packets.filter(packet => packet.TIME > 15.00 && packet.TIME < 16.00 && packet.IP_SRC == '64.233.177.106');
-      
-
-      
-      res.render('index', {ei: Eight.length, ni: Nine.length, te: Ten.length, el: Eleven.length , tw: Twelve.length , thr: Thirteen.length , fr: Fourteen.length , ff:Fifteen.length});
-    })
-    .catch(err => console.error(err));
-});
-
-app.get('/microsoft', (req, res) => {
-  let Eight, Nine, Ten, Eleven, Twelve, Thirteen, Fourteen, Fifteen;
-  Packet.find({})
-    .then(packets => {
-      
-      
-      Eight = packets.filter(packet => packet.TIME > 8.00 && packet.TIME < 9.00 && packet.IP_SRC == '65.55.44.109');
-      Nine = packets.filter(packet => packet.TIME > 9.00  && packet.TIME < 10.00 && packet.IP_SRC == '65.55.44.109' ); 
-      Ten = packets.filter(packet => packet.TIME > 10.00 && packet.TIME < 11.00 && packet.IP_SRC == '65.55.44.109' ); 
-      Eleven = packets.filter(packet => packet.TIME > 11.00 && packet.TIME < 12.00 && packet.IP_SRC == '65.55.44.109' );
-      Twelve = packets.filter(packet => packet.TIME > 12.00 && packet.TIME < 13.00 && packet.IP_SRC == '65.55.44.109');
-      Thirteen = packets.filter(packet => packet.TIME > 13.00 && packet.TIME < 14.00 && packet.IP_SRC == '65.55.44.109 ');
-      Fourteen = packets.filter(packet => packet.TIME > 14.00 && packet.TIME < 15.00  && packet.IP_SRC == '65.55.44.109 ');
-      Fifteen = packets.filter(packet => packet.TIME > 15.00 && packet.TIME < 16.00 && packet.IP_SRC == '65.55.44.109 ');
-      
-
-      
-      res.render('index', {ei: Eight.length, ni: Nine.length, te: Ten.length, el: Eleven.length , tw: Twelve.length , thr: Thirteen.length , fr: Fourteen.length , ff:Fifteen.length});
-    })
-    .catch(err => console.error(err));
-});
-
-server.listen(port, () => console.log(`App running on port ${port}`));
+// listens to port 300 and logs message when listening
+app.listen(port, () => console.log(`listening on ${port}`));
