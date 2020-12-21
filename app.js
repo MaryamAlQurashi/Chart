@@ -39,7 +39,7 @@ const dbName = 'database';
 app.get('/', (req, res) => {
 
   // opens connection to mongodb
-  MongoClient.connect(url).then(client => {
+  MongoClient.connect(url, {useNewUrlParser: true, useUnifiedTopology: true}).then(client => {
 
     // creates const for our database
     const db = client.db(dbName);
@@ -48,7 +48,7 @@ app.get('/', (req, res) => {
     const col = db.collection('packets');
 
     // finds ALL pkts in 'pkts' collection/converts to array
-    col.find({}).skip(10).limit(500).toArray().then(docs => {
+    col.find({}, {"_id":0, "DATE":1, "PROTOCOL": 1}).skip(700000).limit(10).toArray().then(docs => {
 
       // logs message upon finding collection
       console.log('found pkts for index');
@@ -85,7 +85,7 @@ app.get('/', (req, res) => {
 app.get('/api/data', (req, res) => {
 
   // opens connection to mongodb
-  MongoClient.connect(url).then(client => {
+  MongoClient.connect(url, {useNewUrlParser: true, useUnifiedTopology: true}).then(client => {
 
     // creates const for our database
     const db = client.db(dbName);
@@ -94,7 +94,7 @@ app.get('/api/data', (req, res) => {
     const col = db.collection('packets');
 
     // finds ALL pkts in 'pkts' collection/converts to array
-    col.find({}).skip(10).limit(10000).toArray().then(docs => {
+    col.find({}, {"DATE": 1, "PROTOCOL" : 1, "_id": 0}).skip(650000).limit(6700).toArray().then(docs => {
 
       // logs message upon finding 'pkts' collection
       console.log('found pkts for api');
