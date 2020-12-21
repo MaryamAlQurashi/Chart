@@ -11,6 +11,15 @@
       #chart {
         height: 1150px;
         width: 1750px;
+      },
+      #reload {
+        background: #00BAF0;
+        border: none;
+        border-radius: 4px;
+        color: white;
+        cursor: pointer;
+        font-size: 16px;
+        padding: 4px 8px;
       }
     </style>
 
@@ -25,13 +34,15 @@
 
       <!-- inserts each employee name/age from MongoDB to list -->
       <% pkts.forEach(pkt => { %>
-      <li><%= `Time: ${pkt.TIME.getTime()}, Protocol: ${pkt.PROTOCOL}` %></li>
+      <li><%= `Time: ${pkt.DATE}, Protocol: ${pkt.PROTOCOL}` %></li>
       <% }); %>
 
     </ul>
 
     <!-- chart container -->
     <div id="chart"></div>
+    <button id="reload"><i class="fa fa-refresh"></i>&nbsp;Replay Animation</button>
+
 
     <!-- fetches data from api/data page & renders chart from data returned -->
     <script>
@@ -64,6 +75,7 @@
           // creates pkts variable to store JSON data form /api/data
           let pkts = data;
           
+          
           //let pktCnT = [];
           //let pktCnU = [];
 
@@ -71,21 +83,29 @@
           //let udp = data.filter(pr => pr.PROTOCOL == 6 );
 
           // creates empty employeeInfo array
-          let pktInfo = [];
+          let pktInfo= [];
+          //let pktInfoU = [];
           //let pktCnT = [];
           //let pktCnU = [];
           //let tcp, udp;
           let pktInfo2 =[];
+          //let pktInfo3 =[];
+          //let pktInfo4 = [];
 
           // loops through data from employee variable
           pkts.forEach(pkt => {
+            //let tp = (pkt.PROTOCOL == 6);
+            //let up = (pkt.PROTOCOL == 17);
 
            //tcp = pkt.filter(pr => pr.Protocol == 17);
             //udp = pkt.filter(pr => pr.Protocol == 6 );
 
             // pushes values from employees variable to empty employeeInfo array
-            pktInfo.push([Date.parse(pkt.TIME) , parseInt(pkt.PROTOCOL)]);
-            pktInfo2.push([Date.parse(pkt.TIME) , parseInt(pkt.PROTOCOL) , parseInt(pktInfo.length)]);
+            pktInfo.push([Date.parse(pkt.DATE) , parseInt(pkt.PROTOCOL)]);
+            //pktInfoU.push([Date.parse(pkt.DATE) , parseInt(up)]);
+            pktInfo2.push([Date.parse(pkt.DATE) , parseInt(pkt.PROTOCOL) , parseInt(pktInfo.length)]);
+            //pktInfo3.push([Date.parse(pkt.DATE) , parseInt(pkt.PROTOCOL) , parseInt(pktInfo.length)]);
+            //pktInfo4.push([Date.parse(pkt.DATE) , parseInt(pktInfo.length)]);
             //pktInfo2.push([Date.parse(pkt.TIME) ,  parseInt(pktInfo.length)]);
             //pktInfo2.push([pktInfo, parseInt(pkt.Protocol.length)]);
             //pktCnT.push ([parseInt(pkt.Protocol: 6)]);
@@ -96,19 +116,44 @@
           // creates chart const with employeeInfo array
           const chart = {
             type: 'bubble',
-            scaleX: {
-              'min-value': 1602496397577,
-              step: 'hour',
-        transform: {
-          type: 'date',
-          all: '%m/%d/%y<br>%h:%i %A'
-        }
-      },
-            series: [
+            plot: {
+              
+            marker: { //Apply marker styling globally.
+            'background-color': "#00FFFF",
+            'border-color': "#009999",
+            'border-width': 1,
+            alpha:0.3
+            },
+            animation: {
+              effect: 4,
+              method: 0,
+              sequence: 1
+              }
+              },
+
+            
+            
+              series: [
               {
                 values: pktInfo2
+                
+              
               }
-            ]
+            ],
+
+
+            scaleX: {
+             // 'min-value': 1602496397577,
+             //'min-value': 1604214107000,
+             //"min-value": 1603332000000,
+            'max-value': 1605421685000,
+              step: 'second',
+        transform: {
+          type: 'date',
+          all: '%m/%d/%Y<br>%h:%i:%s:%q %A'
+        }
+      }
+            
           };
 
           // renders zingchart to the page
@@ -119,10 +164,20 @@
             width: '100%'
           });
 
+          var reload = document.querySelector('#reload');
+    if (reload) {
+      reload.addEventListener('click', function() {
+        zingchart.exec('chart', 'reload');
+      });
+
+    }
+
         })
 
         // catches errors in promise chain
         .catch(error => console.log('fetch error'));
+
+  
 
     </script>
 
